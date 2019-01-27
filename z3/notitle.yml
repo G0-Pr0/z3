@@ -1,0 +1,37 @@
+---
+- hosts: web_nodes
+  become: yes
+  vars:
+    publicOne:
+    privateOne:
+    PrivateTwo:
+  roles:
+    - ngnix
+  tasks:
+    - include_tasks: tasks/os-dependencies.yml
+
+- hosts: stats_nodes
+  become: yes
+  vars:
+    metrics_database_name: "metrics"
+    metrics_database_password: "metrics"
+    metrics_database_user: "metrics"
+    datasource_name: "my-influx"
+    grafana_http_port: 3000
+    telegraf_config_path: "telegraf_default.conf"
+  roles:
+    - grafana
+    - telegraf
+    - influxdb
+  tasks:
+    - include_tasks: tasks/configure-grafana.yml
+
+- hosts: app_nodes
+  become: yes
+    vars:
+    jar_location: carrental/carrental.jar
+    app_location: /opt/carrental/carrental.jar
+    app_user: carrental
+  roles:
+     - app
+     - telegraf
